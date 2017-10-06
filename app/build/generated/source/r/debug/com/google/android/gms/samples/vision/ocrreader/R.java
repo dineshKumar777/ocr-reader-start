@@ -2728,7 +2728,7 @@ containing a value of this type.
         public static final int beginning=0x7f0c0034;
         public static final int bottom=0x7f0c0022;
         public static final int buttonPanel=0x7f0c004e;
-        public static final int button_send=0x7f0c008e;
+        public static final int button_send=0x7f0c008f;
         public static final int cancel_action=0x7f0c007f;
         public static final int center=0x7f0c0023;
         public static final int center_horizontal=0x7f0c0024;
@@ -2839,6 +2839,7 @@ containing a value of this type.
         public static final int topLayout=0x7f0c008b;
         public static final int topPanel=0x7f0c0051;
         public static final int touch_outside=0x7f0c0074;
+        public static final int tv_colorvalues=0x7f0c008e;
         public static final int up=0x7f0c0009;
         public static final int useLogo=0x7f0c0014;
         public static final int view_offset_helper=0x7f0c000a;

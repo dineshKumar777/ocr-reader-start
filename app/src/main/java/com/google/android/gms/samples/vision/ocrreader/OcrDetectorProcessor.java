@@ -57,24 +57,6 @@ public class OcrDetectorProcessor implements Detector.Processor<TextBlock> {
     }
 
 
-    public void getColorCode(Detector.Detections<TextBlock> detections){
-        Long tsLong = System.currentTimeMillis()/1000;
-        String ts = tsLong.toString();
-
-
-        SparseArray<TextBlock> items = detections.getDetectedItems();
-        for(int i = 0; i < items.size(); ++i){
-            TextBlock item = items.valueAt(i);
-            if(item != null && item.getValue() != null){
-                Log.d("OcrDetectorProcessor", ts + ": "+ item.getValue()+" found on button press.");
-            }
-
-            if(item != null && item.getValue() != null && item.getValue().length() == 5){
-                Log.d("OcrDetectorProcessor", ts + ": "+ item.getValue()+" found on button press and matched length count");
-            }
-        }
-    }
-
     /**
      * Frees the resources associated with this detection processor.
      */

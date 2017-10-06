@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,11 +25,19 @@
     </com.google.android.gms.samples.vision.ocrreader.ui.camera.CameraSourcePreview>
 
 
+    <TextView
+        android:id="@+id/tv_colorvalues"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="this is a very long text"
+        android:padding="4dp"
+        android:textSize="14sp"/>
+
     <Button
 
         android:id="@+id/button_send"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
+        android:layout_height="48dp"
         android:text="button" />
 
 </LinearLayout>

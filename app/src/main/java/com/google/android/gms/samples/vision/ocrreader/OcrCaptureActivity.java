@@ -26,30 +26,28 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.samples.vision.ocrreader.ui.camera.CameraSource;
 import com.google.android.gms.samples.vision.ocrreader.ui.camera.CameraSourcePreview;
 import com.google.android.gms.samples.vision.ocrreader.ui.camera.GraphicOverlay;
-import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
@@ -60,11 +58,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.Locale;
 
 /**
  * Activity for the Ocr Detecting app.  This app detects text and displays the value with the
@@ -103,8 +99,14 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     Sheet datatypeSheet;
     Iterator<Row> iterator;
 
+    // ColorCode Detecter
+    int colorCodeLength = 5;
+
     /*Text Processor*/
     private OcrDetectorProcessor mTextDetector;
+
+    /*Views*/
+    private TextView mColorValuesView;
 
     /**
      * Initializes the UI and creates the detector pipeline.
@@ -113,6 +115,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     public void onCreate(Bundle bundle){
         super.onCreate(bundle);
         setContentView(R.layout.ocr_capture);
+        mColorValuesView = (TextView) findViewById(R.id.tv_colorvalues);
 
         System.setProperty("org.apache.poi.javax.xml.stream.XMLInputFactory", "com.fasterxml.aalto.stax.InputFactoryImpl");
         System.setProperty("org.apache.poi.javax.xml.stream.XMLOutputFactory", "com.fasterxml.aalto.stax.OutputFactoryImpl");
@@ -133,9 +136,6 @@ public final class OcrCaptureActivity extends AppCompatActivity {
             excelFile = getResources().openRawResource(R.raw.sampledata);
             workbook = new XSSFWorkbook(excelFile);
             datatypeSheet = workbook.getSheetAt(0);
-
-
-
         }catch (Exception e){
 
         }
@@ -152,6 +152,14 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                 Long tsLong = System.currentTimeMillis()/1000;
                 String ts = tsLong.toString();
 
+                String detectedColorCode = detectColorCode();
+                if(detectedColorCode != null){
+                    printColorCodeDetails(detectedColorCode);
+                }
+
+
+
+                /*
                 // Do something in response to button click
                 SparseArray<TextBlock> detectedTextBlocks = mTextDetector.items;
                 for(int i = 0; i < detectedTextBlocks.size(); ++i){
@@ -194,6 +202,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
 
                     }
                 }
+                */
 
             }
         });
@@ -230,6 +239,57 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                 };
         tts = new TextToSpeech(this.getApplicationContext(), listener);
          **/
+    }
+
+
+    // Detect color code from list of textblocks availble at button press event
+    private String detectColorCode(){
+        String detectedColorCode = null;
+        SparseArray<TextBlock> detectedTextBlocks = mTextDetector.items;
+
+        for(int i = 0; i < detectedTextBlocks.size(); ++i) {
+            TextBlock detectedTextBlock = detectedTextBlocks.valueAt(i);
+            String detectedText = detectedTextBlock.getValue();
+            if(detectedTextBlock != null && detectedText != null && detectedText.length() == colorCodeLength && TextUtils.isDigitsOnly(detectedText)) {
+                Log.d("OcrDetectorProcessor", "TextDetector : " + detectedText + " found on button press and matched length count.");
+                detectedColorCode = detectedText;
+                break;
+            }
+        }
+
+        return detectedColorCode;
+
+    }
+
+    private void printColorCodeDetails(String detectedColorCode){
+
+        iterator = datatypeSheet.iterator();
+
+        stringFound: //Break loop when string found
+        while(iterator.hasNext()){
+            Row currentRow = iterator.next();
+            Iterator<Cell> cellIterator = currentRow.iterator();
+
+            while (cellIterator.hasNext()) {
+                Cell currentCell = cellIterator.next();
+                currentCell.setCellType(CellType.STRING);
+
+                if(currentCell.getStringCellValue().equals(detectedColorCode)){
+                    String columnValue = currentRow.getCell(0).toString();
+                    String colorCode = workbook.getSheetAt(0).getRow(0).getCell(currentCell.getColumnIndex()).toString();
+                    Log.d("OcrCaptureActivity","columnvalue -------------------------------- " + columnValue);
+                    Log.d("OcrCaptureActivity","colorcode ------------------------------------" + colorCode);
+
+//                    Snackbar.make(mGraphicOverlay, "Detected colorcode: "+ detectedColorCode+" found on button press. Columnvalue: "+columnValue+ ", ColorCode: "+colorCode,
+//                            Snackbar.LENGTH_LONG)
+//                            .show();
+                    String colorDetails = "Detected colorcode: "+ detectedColorCode+" found on button press. Columnvalue: "+columnValue+ ", ColorCode: "+colorCode;
+                    mColorValuesView.setText(colorDetails);
+                    break stringFound;
+                }
+            }
+        }
+
     }
 
 
@@ -469,6 +529,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
         return text != null;
     }
 
+    /*
     private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         @Override
@@ -476,6 +537,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
             return onTap(e.getRawX(), e.getRawY()) || super.onSingleTapConfirmed(e);
         }
     }
+    */
 
     private class ScaleListener implements ScaleGestureDetector.OnScaleGestureListener {
 
